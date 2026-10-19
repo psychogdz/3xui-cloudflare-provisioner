@@ -13,15 +13,12 @@ install_3xui_panel() {
     fi
 
     log_info "Downloading and executing official 3X-UI installer..."
-    # The official 3x-ui installer non-interactive install
-    curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh | bash -s -- -y >/dev/null 2>&1 || {
-        log_warn "Direct curl pipe encountered warning; retrying via temporary script..."
-        local tmp_sh
-        tmp_sh="$(mktemp /tmp/3xui-install.XXXXXX.sh)"
-        curl -sSL https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh -o "$tmp_sh"
-        bash "$tmp_sh" -y
-        rm -f "$tmp_sh" 2>/dev/null || true
-    }
+    export XUI_NONINTERACTIVE=1
+    local tmp_sh
+    tmp_sh="$(mktemp /tmp/3xui-install.XXXXXX.sh)"
+    curl -sSL https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh -o "$tmp_sh"
+    bash "$tmp_sh"
+    rm -f "$tmp_sh" 2>/dev/null || true
 
     if [[ ! -d "/usr/local/x-ui" && ! -d "/etc/x-ui" ]]; then
         log_error "3X-UI installation could not be verified."

@@ -20,10 +20,13 @@
 # ============================================================================
 set -Eeuo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR=""
+if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
 
 # Download scripts if running via standalone one-liner pipe without repo cloned
-if [[ ! -f "$SCRIPT_DIR/scripts/common.sh" ]]; then
+if [[ -z "$SCRIPT_DIR" || ! -f "$SCRIPT_DIR/scripts/common.sh" ]]; then
     REPO_RAW_URL="https://raw.githubusercontent.com/psychogdz/3xui-cloudflare-provisioner/main"
     TMP_DIR="$(mktemp -d /tmp/3xui-provisioner.XXXXXX)"
     mkdir -p "$TMP_DIR/scripts"
