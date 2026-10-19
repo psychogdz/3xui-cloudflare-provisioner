@@ -40,19 +40,23 @@ issue_cloudflare_ssl() {
     export CF_Zone_ID="$zone_id"
 
     # Issue ECC certificate using Cloudflare DNS-01 API
+    local issue_code=0
     /root/.acme.sh/acme.sh --issue \
         --dns dns_cf \
         -d "$full_domain" \
         --keylength ec-256 \
         --server letsencrypt \
-        --dnssleep 15 || {
-            log_warn "Let's Encrypt issue attempt failed; retrying with ZeroSSL..."
-            /root/.acme.sh/acme.sh --issue \
-                --dns dns_cf \
-                -d "$full_domain" \
-                --keylength ec-256 \
-                --dnssleep 15
-        }
+        --dnssleep 15 || issue_code=$?
+
+    # Exit code 2 from acme.sh means certificate already exists and renewal is not needed yet
+    if [[ $issue_code -ne 0 && $issue_code -ne 2 ]]; then
+        log_warn "Let's Encrypt issue returned code ${issue_code}; retrying with ZeroSSL..."
+        /root/.acme.sh/acme.sh --issue \
+            --dns dns_cf \
+            -d "$full_domain" \
+            --keylength ec-256 \
+            --dnssleep 15 || true
+    fi
 
     # Install certificate to permanent directory
     /root/.acme.sh/acme.sh --install-cert -d "$full_domain" --ecc \
