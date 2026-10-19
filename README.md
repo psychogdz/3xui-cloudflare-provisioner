@@ -137,7 +137,7 @@ curl -sSL https://raw.githubusercontent.com/psychogdz/3xui-cloudflare-provisione
 
 1. **VLESS WebSocket TLS (Port 443):** اینباند اصلی CDN. روی همه اپراتورها (همراه اول، ایرانسل، رایتل، مخابرات، شاتل و ...) با پینگ Real Delay کار می‌کند.
 2. **VLESS gRPC TLS (Port 8443):** اینباند کم‌تاخیر با قابلیت استریم مالتی‌پلکس برای بازی و مصارف حساس به لیتنسی.
-3. **VLESS Reality Vision (Port 2053):** اتصال مستقیم بدون کلودفلر برای شرایطی که مایل به اتصال P2P هستید.
+3. **VLESS Reality Vision (Port 2083):** اتصال مستقیم بدون کلودفلر برای شرایطی که مایل به اتصال P2P هستید.
 
 ---
 

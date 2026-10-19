@@ -181,7 +181,7 @@ c.execute('''
         sniffing, share_addr_strategy, share_addr
     ) VALUES (
         3, 1, 0, 0, 0, 'Reality-Vision-Direct', 1, 0,
-        '', ${INBOUND_REALITY_PORT:-2053}, 'vless', ?, ?, 'in-reality-2053',
+        '', ${INBOUND_REALITY_PORT:-2083}, 'vless', ?, ?, 'in-reality-2083',
         '{\"enabled\": true, \"destOverride\": [\"http\", \"tls\", \"quic\"]}',
         'custom', '$full_domain'
     )

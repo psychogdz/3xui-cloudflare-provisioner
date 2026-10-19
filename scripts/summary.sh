@@ -9,7 +9,7 @@ print_and_save_summary() {
 
     local cdn_port="${INBOUND_CDN_PORT:-443}"
     local grpc_port="${INBOUND_GRPC_PORT:-8443}"
-    local reality_port="${INBOUND_REALITY_PORT:-2053}"
+    local reality_port="${INBOUND_REALITY_PORT:-2083}"
     local panel_port="${PANEL_PORT:-2053}"
     local base_path="${PANEL_BASE_PATH}"
 

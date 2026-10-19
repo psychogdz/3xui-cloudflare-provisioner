@@ -94,6 +94,7 @@ configure_firewall() {
     local sub_port="${SUB_PORT:-2096}"
     local cdn_port="${INBOUND_CDN_PORT:-443}"
     local grpc_port="${INBOUND_GRPC_PORT:-8443}"
+    local reality_port="${INBOUND_REALITY_PORT:-2083}"
 
     log_step "Configuring firewall rules"
     if command -v ufw >/dev/null 2>&1; then
@@ -103,8 +104,9 @@ configure_firewall() {
         ufw allow 80/tcp >/dev/null 2>&1 || true
         ufw allow "${cdn_port}"/tcp >/dev/null 2>&1 || true
         ufw allow "${grpc_port}"/tcp >/dev/null 2>&1 || true
+        ufw allow "${reality_port}"/tcp >/dev/null 2>&1 || true
         ufw allow "${panel_port}"/tcp >/dev/null 2>&1 || true
         ufw allow "${sub_port}"/tcp >/dev/null 2>&1 || true
-        log_success "Firewall rules applied for ports 22, 80, ${cdn_port}, ${grpc_port}, ${panel_port}, ${sub_port}."
+        log_success "Firewall rules applied for ports 22, 80, ${cdn_port}, ${grpc_port}, ${reality_port}, ${panel_port}, ${sub_port}."
     fi
 }
