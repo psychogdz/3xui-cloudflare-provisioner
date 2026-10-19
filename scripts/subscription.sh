@@ -32,12 +32,14 @@ start_and_verify_service() {
 
     log_info "Testing local subscription endpoint..."
     local check_sub
-    check_sub="$(curl -s4m 5 "http://127.0.0.1:${sub_port}${sub_path}${CLIENT_SUB_ID}" 2>/dev/null || true)"
+    check_sub="$(curl -s4m 5 "http://127.0.0.1:${sub_port}${sub_path}${CLIENT_SUB_ID}" \
+        -H "Host: ${full_domain}" \
+        -A "Happ/3.0" 2>/dev/null || true)"
 
     if [[ -n "$check_sub" ]]; then
         log_success "Subscription endpoint responded successfully."
     else
-        log_warn "Subscription endpoint not ready immediately. Client can still use direct VLESS links."
+        log_warn "Subscription endpoint check had warnings. Client can still use direct VLESS links."
     fi
 
     return 0

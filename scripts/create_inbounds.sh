@@ -47,10 +47,32 @@ db_path = '$XUI_DB_PATH'
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
-# Clear default dummy inbounds
-c.execute(\"DELETE FROM inbounds\")
+# Clear default dummy inbounds & client tables
+c.execute('DELETE FROM inbounds')
+c.execute('DELETE FROM clients')
+c.execute('DELETE FROM client_inbounds')
+c.execute('DELETE FROM client_traffics')
 
 now_ms = int(time.time() * 1000)
+
+# 1. Populate 3X-UI v3 normalized clients table
+c.execute('''
+    INSERT INTO clients (
+        id, email, sub_id, uuid, enable, total_gb, expiry_time, created_at, updated_at
+    ) VALUES (1, '$client_email', '$client_sub_id', '$client_uuid', 1, 0, 0, ?, ?)
+''', (now_ms, now_ms))
+
+# 2. Map client to inbounds 1, 2, 3
+c.execute('INSERT INTO client_inbounds (client_id, inbound_id, flow_override, created_at) VALUES (1, 1, \"\", ?)', (now_ms,))
+c.execute('INSERT INTO client_inbounds (client_id, inbound_id, flow_override, created_at) VALUES (1, 2, \"\", ?)', (now_ms,))
+c.execute('INSERT INTO client_inbounds (client_id, inbound_id, flow_override, created_at) VALUES (1, 3, \"xtls-rprx-vision\", ?)', (now_ms,))
+
+# 3. Populate client_traffics table for quota and stats
+c.execute('''
+    INSERT INTO client_traffics (
+        inbound_id, enable, email, up, down, expiry_time, total
+    ) VALUES (1, 1, '$client_email', 0, 0, 0, 0)
+''')
 
 client_obj_ws = {
     'id': '$client_uuid',
@@ -71,7 +93,7 @@ client_obj_vision = dict(client_obj_ws)
 client_obj_vision['flow'] = 'xtls-rprx-vision'
 
 # ----------------------------------------------------------------------------
-# 1. INBOUND 1: VLESS + WebSocket + TLS on Port 443 (Cloudflare CDN Primary)
+# INBOUND 1: VLESS + WebSocket + TLS on Port 443 (Cloudflare CDN Primary)
 # ----------------------------------------------------------------------------
 stream_ws = {
     'network': 'ws',
@@ -110,7 +132,7 @@ c.execute('''
 ''', (json.dumps({'clients': [client_obj_ws], 'decryption': 'none'}), json.dumps(stream_ws)))
 
 # ----------------------------------------------------------------------------
-# 2. INBOUND 2: VLESS + gRPC + TLS on Port 8443 (Cloudflare CDN Low Latency)
+# INBOUND 2: VLESS + gRPC + TLS on Port 8443 (Cloudflare CDN Low Latency)
 # ----------------------------------------------------------------------------
 stream_grpc = {
     'network': 'grpc',
@@ -146,7 +168,7 @@ c.execute('''
 ''', (json.dumps({'clients': [client_obj_ws], 'decryption': 'none'}), json.dumps(stream_grpc)))
 
 # ----------------------------------------------------------------------------
-# 3. INBOUND 3: VLESS + Reality (Vision) on Port 2053 (Direct Fallback)
+# INBOUND 3: VLESS + Reality (Vision) on Port 2083 (Direct Fallback)
 # ----------------------------------------------------------------------------
 stream_reality = {
     'network': 'tcp',
@@ -191,6 +213,6 @@ conn.commit()
 conn.close()
 "
 
-    log_success "Created 3 specialized inbounds in 3X-UI database."
+    log_success "Created 3 specialized inbounds and registered clients in 3X-UI."
     return 0
 }
