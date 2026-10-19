@@ -1,0 +1,21 @@
+# Credentials & Environment
+.env
+config.env
+*.key
+*.pem
+*.crt
+*.cer
+
+# Logs & Temporary files
+*.log
+*.tmp
+*.pcap
+/tmp/
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.bak
