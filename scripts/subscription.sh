@@ -26,13 +26,13 @@ start_and_verify_service() {
     [[ "$sub_path" != /* ]] && sub_path="/${sub_path}"
     [[ "$sub_path" != */ ]] && sub_path="${sub_path}/"
 
-    # Assemble Subscription URLs
-    SUB_URL_IP="http://${server_ip}:${sub_port}${sub_path}${CLIENT_SUB_ID}"
-    SUB_URL_DOMAIN="http://${full_domain}:${sub_port}${sub_path}${CLIENT_SUB_ID}"
+    # Assemble Subscription URLs (HTTPS over Cloudflare port 2096)
+    SUB_URL_DOMAIN="https://${full_domain}:${sub_port}${sub_path}${CLIENT_SUB_ID}"
+    SUB_URL_IP="https://${server_ip}:${sub_port}${sub_path}${CLIENT_SUB_ID}"
 
     log_info "Testing local subscription endpoint..."
     local check_sub
-    check_sub="$(curl -s4m 5 "http://127.0.0.1:${sub_port}${sub_path}${CLIENT_SUB_ID}" \
+    check_sub="$(curl -k -s4m 5 "https://127.0.0.1:${sub_port}${sub_path}${CLIENT_SUB_ID}" \
         -H "Host: ${full_domain}" \
         -A "Happ/3.0" 2>/dev/null || true)"
 

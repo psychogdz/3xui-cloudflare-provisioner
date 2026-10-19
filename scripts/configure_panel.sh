@@ -41,7 +41,22 @@ configure_panel_database() {
     # Backup database
     cp "$XUI_DB_PATH" "${XUI_DB_PATH}.bak"
 
-    # Direct SQLite updates via Python
+    # Use official x-ui CLI for bcrypt password hashing and resetting 2FA
+    local xui_bin=""
+    for b in "/usr/local/x-ui/x-ui" "/usr/bin/x-ui"; do
+        if [[ -x "$b" ]]; then
+            xui_bin="$b"
+            break
+        fi
+    done
+
+    if [[ -n "$xui_bin" ]]; then
+        log_info "Configuring panel credentials and resetting 2FA via official x-ui CLI..."
+        "$xui_bin" setting -username "$PANEL_USERNAME" -password "$PANEL_PASSWORD" >/dev/null 2>&1 || true
+        "$xui_bin" setting -resetTwoFactor >/dev/null 2>&1 || true
+    fi
+
+    # Direct SQLite updates via Python for custom paths and HTTPS subscription server
     python3 -c "
 import sqlite3
 
@@ -49,14 +64,11 @@ db_path = '$XUI_DB_PATH'
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
-# 1. Update users table with new credentials
-c.execute(\"SELECT count(*) FROM users WHERE id=1\")
-if c.fetchone()[0] > 0:
-    c.execute(\"UPDATE users SET username=?, password=? WHERE id=1\", ('$PANEL_USERNAME', '$PANEL_PASSWORD'))
-else:
-    c.execute(\"INSERT INTO users (id, username, password) VALUES (1, ?, ?)\", ('$PANEL_USERNAME', '$PANEL_PASSWORD'))
+# Ensure 2FA is completely disabled in settings
+c.execute(\"UPDATE settings SET value='false' WHERE key='twoFactorEnable'\")
+c.execute(\"UPDATE settings SET value='' WHERE key='twoFactorToken'\")
 
-# 2. Update panel settings
+# Update panel settings and enable HTTPS on subscription server
 settings_map = {
     'webPort': '$PANEL_PORT',
     'webBasePath': '$PANEL_BASE_PATH',
@@ -64,7 +76,9 @@ settings_map = {
     'subEnable': 'true',
     'subPort': '${SUB_PORT:-2096}',
     'subPath': '$SUB_PATH',
-    'subDomain': '$full_domain'
+    'subDomain': '$full_domain',
+    'subCertFile': '/etc/ssl/v2ray/cert.crt',
+    'subKeyFile': '/etc/ssl/v2ray/cert.key'
 }
 
 for k, v in settings_map.items():
